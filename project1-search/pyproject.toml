@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "info-f-311-search"
+version = "0.1.0"
+description = ""
+authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.11"
+lle = { git = "https://github.com/yamoling/lle.git" }
+pytest = "^7.4.1"
+typing-extensions = "^4.8.0"
+
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+# Check https://beta.ruff.rs/docs/rules/ for all rules
+fixable = ["ALL"]
+# Do not fix imports automatically (it removes unused imports in __init__.py files)
+unfixable = ["F401"]
+line-length = 140
