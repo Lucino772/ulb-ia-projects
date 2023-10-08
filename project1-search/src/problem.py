@@ -96,6 +96,7 @@ class SimpleSearchProblem(SearchProblem[WorldState]):
 
         return distance_sum
 
+
 @dataclass
 class CornerProblemState:
     world_state: "WorldState"
@@ -217,22 +218,54 @@ class CornerSearchProblem(SearchProblem[CornerProblemState]):
 
         return distance_sum
 
-class GemProblemState:
-    ...
 
+class GemSearchProblem(SearchProblem[WorldState]):
+    def is_goal_state(self, state: WorldState) -> bool:
+        # Check if all gems have been collected
+        if not all(state.gems_collected):
+            return False
 
-class GemSearchProblem(SearchProblem[GemProblemState]):
-    def __init__(self, world: World):
-        super().__init__(world)
-        self.initial_state = ...
+        # We check if every agent is currently in one of the exit
+        exit_pos = self.world.exit_pos[:]
+        for agent_pos in state.agents_positions:
+            if agent_pos in exit_pos:
+                exit_pos.remove(agent_pos)
 
-    def is_goal_state(self, state: GemProblemState) -> bool:
-        raise NotImplementedError()
+        return len(exit_pos) == 0
 
-    def heuristic(self, state: GemProblemState) -> float:
-        """The number of uncollected gems"""
-        raise NotImplementedError()
+    def _apply_actions(self, actions: Tuple["Action", ...], reset_state: "WorldState"):
+        self.world.step(actions)
+        state = self.world.get_state()
+        self.world.set_state(reset_state)
 
-    def get_successors(self, state: GemProblemState) -> Iterable[Tuple[GemProblemState, Action, float]]:
+        ## Compute cost
+        cost = 0
+
+        # Step taken: +3 per step
+        for agent_pos in state.agents_positions:
+            if agent_pos not in reset_state.agents_positions:
+                cost += 3
+
+        # New gems collected: -5 per gem
+        new_gems_collected = reset_state.gems_collected.count(False) - state.gems_collected.count(False)
+        cost -= new_gems_collected * 5
+
+        return state, actions, cost
+
+    def get_successors(self, state: WorldState) -> Iterable[Tuple[WorldState, Action, float]]:
+        initial_state = self.world.get_state()
         self.nodes_expanded += 1
-        raise NotImplementedError()
+
+        states = []
+        self.world.set_state(state)
+        if not self.world.done:
+            states = [
+                self._apply_actions(actions, state)
+                for actions in itertools.product(*self.world.available_actions())
+            ]
+
+        self.world.set_state(initial_state)
+        return states
+
+    def heuristic(self, state: WorldState) -> float:
+        return state.gems_collected.count(False)
