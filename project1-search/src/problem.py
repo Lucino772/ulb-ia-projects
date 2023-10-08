@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Tuple, Iterable, Generic, TypeVar
-from lle import World, Action, WorldState
+from lle import World, Action, WorldState, Position
+import itertools
 
 
 T = TypeVar("T")
 
+def manhattan_distance(start: "Position", end: "Position"):
+    return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
 class SearchProblem(ABC, Generic[T]):
     """
@@ -39,17 +42,53 @@ class SearchProblem(ABC, Generic[T]):
 
 class SimpleSearchProblem(SearchProblem[WorldState]):
     def is_goal_state(self, state: WorldState) -> bool:
-        raise NotImplementedError()
+        # We check if every agent is currently in one of the exit
+        exit_pos = self.world.exit_pos[:]
+        for agent_pos in state.agents_positions:
+            if agent_pos in exit_pos:
+                exit_pos.remove(agent_pos)
 
-    def get_successors(self, state: WorldState) -> Iterable[Tuple[WorldState, Tuple[Action, ...], float]]:
-        # - N'oubliez pas de jeter un oeil aux méthodes de a classe World (set_state, done, step, available_actions, ...)
-        # - Vous aurez aussi peut-être besoin de `from itertools import product`
+        return len(exit_pos) == 0
+
+    def _apply_actions(self, actions: Tuple["Action", ...], reset_state: "WorldState"):
+        self.world.step(actions)
+        state = self.world.get_state()
+        self.world.set_state(reset_state)
+        return state
+
+    def get_successors(self, state: WorldState) -> Iterable[Tuple["WorldState", Tuple["Action", ...], float]]:
+        initial_state = self.world.get_state()
         self.nodes_expanded += 1
-        raise NotImplementedError()
+
+        states = []
+        self.world.set_state(state)
+        if not self.world.done:
+            states = [
+                (self._apply_actions(actions, state), actions, 0)
+                for actions in itertools.product(*self.world.available_actions())
+            ]
+
+        self.world.set_state(initial_state)
+        return states
 
     def heuristic(self, state: WorldState) -> float:
         """Manhattan distance for each agent to the closest exit"""
-        raise NotImplementedError()
+        available_exit_pos = [
+            pos for pos in self.world.exit_pos
+            if pos not in state.agents_positions
+        ]
+
+        distance_sum = 0
+        for agent_pos in state.agents_positions:
+            if agent_pos in self.world.exit_pos:
+                distance_sum += 0
+            else:
+                distance_sum += min([
+                    manhattan_distance(agent_pos, exit_pos)
+                    for exit_pos in available_exit_pos
+                ])
+
+        return distance_sum
 
 
 class CornerProblemState:
