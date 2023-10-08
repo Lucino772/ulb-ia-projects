@@ -12,9 +12,6 @@ T = TypeVar("T")
 def manhattan_distance(start: "Position", end: "Position"):
     return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
-def euclidian_distance(start: "Position", end: "Position"):
-    return math.sqrt((start[0] - end[0])**2 + (start[1] - end[1])**2)
-
 class SearchProblem(ABC, Generic[T]):
     """
     A Search Problem is a problem that can be solved by a search algorithm.
@@ -44,7 +41,6 @@ class SearchProblem(ABC, Generic[T]):
 
     def heuristic(self, problem_state: T) -> float:
         return 0.0
-
 
 class SimpleSearchProblem(SearchProblem[WorldState]):
     def is_goal_state(self, state: WorldState) -> bool:
@@ -95,7 +91,6 @@ class SimpleSearchProblem(SearchProblem[WorldState]):
                 ])
 
         return distance_sum
-
 
 @dataclass
 class CornerProblemState:
@@ -218,7 +213,6 @@ class CornerSearchProblem(SearchProblem[CornerProblemState]):
 
         return distance_sum
 
-
 class GemSearchProblem(SearchProblem[WorldState]):
     def is_goal_state(self, state: WorldState) -> bool:
         # Check if all gems have been collected
@@ -238,17 +232,16 @@ class GemSearchProblem(SearchProblem[WorldState]):
         state = self.world.get_state()
         self.world.set_state(reset_state)
 
-        ## Compute cost
+        # NOTE: The following piece of code adds a cost to each step
         cost = 0
+        # # Step taken: +3 per step
+        # for agent_pos in state.agents_positions:
+        #     if agent_pos not in reset_state.agents_positions:
+        #         cost += 3
 
-        # Step taken: +3 per step
-        for agent_pos in state.agents_positions:
-            if agent_pos not in reset_state.agents_positions:
-                cost += 3
-
-        # New gems collected: -5 per gem
-        new_gems_collected = reset_state.gems_collected.count(False) - state.gems_collected.count(False)
-        cost -= new_gems_collected * 5
+        # # New gems collected: -5 per gem
+        # new_gems_collected = reset_state.gems_collected.count(False) - state.gems_collected.count(False)
+        # cost -= new_gems_collected * 5
 
         return state, actions, cost
 
