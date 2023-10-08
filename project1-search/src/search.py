@@ -63,7 +63,7 @@ def astar(problem: SearchProblem) -> Optional[Solution]:
     marked_states = set()
     next_states = PriorityQueue()
 
-    next_states.push((problem.initial_state, [], float("-inf")), float("-inf"))
+    next_states.push((problem.initial_state, [], 0), 0)
     marked_states.add(problem.initial_state)
 
     while (not next_states.is_empty()):
