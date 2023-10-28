@@ -27,8 +27,6 @@ def _minimax(mdp: MDP[A, S], state: S, depth: int) -> tuple[float, A]:
             if value > best_value:
                 best_value = value
                 best_action = action
-
-        return best_value, best_action
     else:
         best_value = float("+inf")
         best_action = None
@@ -41,7 +39,7 @@ def _minimax(mdp: MDP[A, S], state: S, depth: int) -> tuple[float, A]:
                 best_value = value
                 best_action = action
 
-        return best_value, best_action
+    return best_value, best_action
 
 minimax = ensure_agent(_minimax)
 
@@ -60,11 +58,9 @@ def _alpha_beta(mdp: MDP[A, S], state: S, depth: int, alpha: float=float("-inf")
                 best_action = action
 
             # INFO: alpha-beta pruning
+            alpha = max(alpha, value)
             if value >= beta:
                 break
-            alpha = max(alpha, value)
-
-        return best_value, best_action
     else:
         best_value = float("+inf")
         best_action = None
@@ -78,11 +74,11 @@ def _alpha_beta(mdp: MDP[A, S], state: S, depth: int, alpha: float=float("-inf")
                 best_action = action
 
             # INFO: alpha-beta pruning
+            beta = min(beta, value)
             if value <= alpha:
                 break
-            beta = min(beta, value)
 
-        return best_value, best_action
+    return best_value, best_action
 
 alpha_beta = ensure_agent(_alpha_beta)
 
@@ -99,8 +95,6 @@ def _expectimax(mdp: MDP[A, S], state: S, depth: int) -> Action:
             if value > best_value:
                 best_value = value
                 best_action = action
-
-        return best_value, best_action
     else:
         best_value = 0
         best_action = None
@@ -113,6 +107,6 @@ def _expectimax(mdp: MDP[A, S], state: S, depth: int) -> Action:
                 next_depth = depth-(not min(next_state.current_agent, 1))
                 best_value += probability * _expectimax(mdp, next_state, next_depth)[0]
 
-        return best_value, best_action
+    return best_value, best_action
 
 expectimax = ensure_agent(_expectimax)
