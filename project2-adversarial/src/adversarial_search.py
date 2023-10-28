@@ -1,53 +1,47 @@
+from typing import Callable, Tuple
 from lle import Action
 from mdp import MDP, S, A
 
-class _MinMaxAlgo:
-    def _min(self, mdp: MDP[A, S], state: S, max_depth: int) -> float:
-        best_value = float("+inf")
-        for action in mdp.available_actions(state):
-            next_state = mdp.transition(state, action)
-            if next_state.current_agent == 0:
-                best_value = min(best_value, self.run(mdp, next_state, max_depth-1))
-            else:
-                best_value = min(best_value, self.run(mdp, next_state, max_depth))
-
-        return best_value
-
-    def _max(self, mdp: MDP[A, S], state: S, max_depth: int) -> float:
-        best_value = float("-inf")
-        for action in mdp.available_actions(state):
-            next_state = mdp.transition(state, action)
-            best_value = max(best_value, self.run(mdp, next_state, max_depth-1))
-
-        return best_value
-
-    def run(self, mdp: MDP[A, S], state: S, max_depth) -> float:
-        if mdp.is_final(state) or max_depth == 0:
-            return state.value
-
-        if state.current_agent == 0:
-            return self._max(mdp, state, max_depth)
-        else:
-            return self._min(mdp, state, max_depth)
-
-    def execute(self, mdp: MDP[A, S], state: S, max_depth: int) -> A:
+def ensure_agent(algo_func: Callable[[MDP[A, S], S, int], Tuple[float, A]]):
+    def _wrapper(mdp: MDP[A, S], state: S, depth: int) -> A:
         if state.current_agent != 0:
             raise ValueError
+        return algo_func(mdp, state, depth)[1]
+    return _wrapper
 
-        best_action = None
+
+def _minimax(mdp: MDP[A, S], state: S, depth: int) -> tuple[float, A]:
+    if (depth == 0) or (mdp.is_final(state)):
+        return state.value, None
+
+    if state.current_agent == 0:
         best_value = float("-inf")
+        best_action = None
+
         for action in mdp.available_actions(state):
             next_state = mdp.transition(state, action)
-            value = self.run(mdp, next_state, max_depth-1)
-
+            value, _ = _minimax(mdp, next_state, depth-1)
             if value > best_value:
-                best_action = action
                 best_value = value
+                best_action = action
 
-        return best_action
+        return best_value, best_action
+    else:
+        best_value = float("+inf")
+        best_action = None
 
-minimax = _MinMaxAlgo().execute
+        for action in mdp.available_actions(state):
+            next_state = mdp.transition(state, action)
+            next_depth = depth-(not min(next_state.current_agent, 1))
 
+            value, _ = _minimax(mdp, next_state, next_depth)
+            if value < best_value:
+                best_value = value
+                best_action = action
+
+        return best_value, best_action
+
+minimax = ensure_agent(_minimax)
 
 class _AlphaBetaAlgo:
     def __init__(self):
