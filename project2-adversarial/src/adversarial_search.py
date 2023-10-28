@@ -41,7 +41,6 @@ def minimax(mdp: MDP[A, S], state: S, max_depth: int) -> A:
     for action in mdp.available_actions(state):
         next_state = mdp.transition(state, action)
         value = _min(mdp, next_state, max_depth-1)
-        print(max_depth, action, value)
 
         if value > best_value:
             best_action = action
