@@ -6,7 +6,10 @@ class _MinMaxAlgo:
         best_value = float("+inf")
         for action in mdp.available_actions(state):
             next_state = mdp.transition(state, action)
-            best_value = min(best_value, self.run(mdp, next_state, max_depth-1))
+            if next_state.current_agent == 0:
+                best_value = min(best_value, self.run(mdp, next_state, max_depth-1))
+            else:
+                best_value = min(best_value, self.run(mdp, next_state, max_depth))
 
         return best_value
 
@@ -37,7 +40,7 @@ class _MinMaxAlgo:
             next_state = mdp.transition(state, action)
             value = self.run(mdp, next_state, max_depth-1)
 
-            if value >= best_value:
+            if value > best_value:
                 best_action = action
                 best_value = value
 
