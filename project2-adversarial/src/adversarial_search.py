@@ -1,6 +1,7 @@
 from typing import Callable, Tuple
 from lle import Action
 from mdp import MDP, S, A
+import random
 
 def ensure_agent(algo_func: Callable[[MDP[A, S], S, int], Tuple[float, A]]):
     def _wrapper(mdp: MDP[A, S], state: S, depth: int) -> A:
@@ -86,5 +87,35 @@ def _alpha_beta(mdp: MDP[A, S], state: S, depth: int, alpha: float=float("-inf")
 
 alpha_beta = ensure_agent(_alpha_beta)
 
-def expectimax(mdp: MDP[A, S], state: S, max_depth: int) -> Action:
-    ...
+def _expectimax(mdp: MDP[A, S], state: S, depth: int) -> Action:
+    if (depth == 0) or (mdp.is_final(state)):
+        return state.value, None
+
+    if state.current_agent == 0:
+        best_value = float("-inf")
+        best_action = None
+
+        for action in mdp.available_actions(state):
+            next_state = mdp.transition(state, action)
+            value, _ = _expectimax(mdp, next_state, depth-1)
+            if value > best_value:
+                best_value = value
+                best_action = action
+
+        return best_value, best_action
+    else:
+        best_value = 0
+        best_action = None
+
+        actions = mdp.available_actions(state)
+        if len(actions) != 0:
+            probability = 1 / len(actions)
+
+            for action in actions:
+                next_state = mdp.transition(state, action)
+                next_depth = depth-(not min(next_state.current_agent, 1))
+                best_value += probability * _expectimax(mdp, next_state, next_depth)[0]
+
+        return best_value, best_action
+
+expectimax = ensure_agent(_expectimax)
