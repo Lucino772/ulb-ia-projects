@@ -84,8 +84,8 @@ class _AlphaBetaAlgo:
             best_value = min(best_value, self.run(mdp, next_state, max_depth-1))
 
             self._set_beta(state.current_agent, best_value)
-            if best_value <= self._get_alpha():
-                return best_value
+            if self._get_alpha() >= self._get_beta(state.current_agent):
+                break
 
         return best_value
 
@@ -96,8 +96,8 @@ class _AlphaBetaAlgo:
             best_value = max(best_value, self.run(mdp, next_state, max_depth-1))
 
             self._set_alpha(best_value)
-            if best_value >= self._max_beta:
-                return best_value
+            if self._get_alpha() >= self._max_beta:
+                break
 
         return best_value
 
