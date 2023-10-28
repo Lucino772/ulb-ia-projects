@@ -25,7 +25,7 @@ class WorldMDP(MDP[Action, WorldMDPState]):
         ]
 
     def _get_next_state(self, state: WorldMDPState, step_reward: float):
-        next_agent = (state.current_agent+1) % self.world.n_agents
+        next_agent = (state.current_agent + 1) % self.world.n_agents
         current_world_state = self.world.get_state()
 
         if state.current_agent != 0:
@@ -35,11 +35,10 @@ class WorldMDP(MDP[Action, WorldMDPState]):
             return WorldMDPState(lle.REWARD_AGENT_DIED, next_agent, current_world_state)
 
         return WorldMDPState(
-            state.value+step_reward,
+            state.value + step_reward,
             next_agent,
             current_world_state,
         )
-
 
     def reset(self):
         self.n_expanded_states = 0
@@ -77,9 +76,7 @@ class WorldMDP(MDP[Action, WorldMDPState]):
     def transition(self, state: WorldMDPState, action: Action) -> WorldMDPState:
         self.n_expanded_states += 1
         self.world.set_state(state.world_state)
-        step_reward = self.world.step(
-            self._actions(state.current_agent, action)
-        )
+        step_reward = self.world.step(self._actions(state.current_agent, action))
         return self._get_next_state(state, step_reward)
 
 
