@@ -70,7 +70,12 @@ class WorldMDP(MDP[Action, WorldMDPState]):
     def available_actions(self, state: WorldMDPState) -> list[Action]:
         current_state = self.world.get_state()
         self.world.set_state(state.world_state)
-        actions = self.world.available_actions()[state.current_agent]
+
+        # INFO: If world is done, we make sure no actions are returned
+        actions = []
+        if not self.world.done:
+            actions = self.world.available_actions()[state.current_agent]
+
         self.world.set_state(current_state)
         return actions
 
