@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import lle
-from lle import World, Action, WorldState, Position
+from lle import World, Action, WorldState
 from mdp import MDP, State
 
 
@@ -82,10 +82,9 @@ class WorldMDP(MDP[Action, WorldMDPState]):
 
 class BetterValueFunction(WorldMDP):
     def _collected_gems_points(self, state: WorldMDPState, world_state: WorldState):
-        collected_gems = (
-            world_state.gems_collected.count(True)
-            - state.world_state.gems_collected.count(True)
-        )
+        collected_gems = world_state.gems_collected.count(
+            True
+        ) - state.world_state.gems_collected.count(True)
         if state.current_agent == 0:
             return collected_gems * 1
         return collected_gems * -2
@@ -95,9 +94,8 @@ class BetterValueFunction(WorldMDP):
             return 0
 
         just_arrived = (
-            (world_state.agents_positions[state.current_agent] in self.world.exit_pos)
-            and (state.current_agent_pos not in self.world.exit_pos)
-        )
+            world_state.agents_positions[state.current_agent] in self.world.exit_pos
+        ) and (state.current_agent_pos not in self.world.exit_pos)
         return just_arrived * 2
 
     def _get_next_state(self, state: WorldMDPState, step_reward: float):
