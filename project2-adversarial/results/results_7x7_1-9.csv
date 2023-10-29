@@ -1,0 +1,10 @@
+depth,minimax_normal_duration_ns,minimax_normal_nodes,minimax_normal_action,minimax_better_duration_ns,minimax_better_nodes,minimax_better_action,alpha_beta_normal_duration_ns,alpha_beta_normal_nodes,alpha_beta_normal_action,alpha_beta_better_duration_ns,alpha_beta_better_nodes,alpha_beta_better_action
+1,172200,3,Stay,191700,3,South,99000,3,Stay,183900,3,South
+2,219900,12,Stay,506700,12,South,564200,8,Stay,1003800,10,South
+3,871800,45,Stay,1304200,35,South,1483900,21,Stay,824900,25,South
+4,2793400,166,Stay,2712900,77,South,2203400,42,Stay,2535800,51,South
+5,11336300,639,South,12826200,196,South,4700900,185,South,8149500,138,South
+6,37481100,2488,South,17308100,532,South,4160400,366,South,9409000,273,South
+7,129064500,10099,Stay,70057200,1606,South,11212800,891,Stay,25874200,577,South
+8,359191300,41428,Stay,182904600,5005,South,24450500,1718,Stay,70813800,1261,South
+9,1033205100,174355,South,400268900,16894,Stay,110894800,6701,South,114006700,2976,Stay
