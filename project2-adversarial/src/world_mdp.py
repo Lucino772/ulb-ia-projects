@@ -88,17 +88,17 @@ class BetterValueFunction(WorldMDP):
         )
         if state.current_agent == 0:
             return collected_gems * 1
-        return collected_gems * -1
+        return collected_gems * -2
 
     def _agent_just_arrived_points(self, state: WorldMDPState, world_state: WorldState):
         if state.current_agent != 0:
-            return -1
+            return 0
 
         just_arrived = (
             (world_state.agents_positions[state.current_agent] in self.world.exit_pos)
             and (state.current_agent_pos not in self.world.exit_pos)
         )
-        return just_arrived * 1
+        return just_arrived * 2
 
     def _get_next_state(self, state: WorldMDPState, step_reward: float):
         next_agent = (state.current_agent + 1) % self.world.n_agents
