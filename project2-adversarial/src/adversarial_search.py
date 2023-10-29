@@ -1,9 +1,10 @@
 from typing import Callable, Tuple
 from lle import Action
 from mdp import MDP, S, A
-
+from functools import wraps
 
 def _ensure_agent0(algo_func: Callable[[MDP[A, S], S, int], Tuple[float, A]]):
+    @wraps(algo_func)
     def _wrapper(mdp: MDP[A, S], state: S, depth: int) -> A:
         if state.current_agent != 0:
             raise ValueError
