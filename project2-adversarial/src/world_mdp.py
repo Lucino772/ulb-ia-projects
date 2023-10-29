@@ -1,7 +1,12 @@
 from dataclasses import dataclass
 import lle
-from lle import World, Action, WorldState
+from lle import World, Action, WorldState, Position
 from mdp import MDP, State
+from typing import List
+
+
+def manhattan_distance(start: Position, end: Position):
+    return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
 
 @dataclass
@@ -16,7 +21,6 @@ class WorldMDPState(State):
 class WorldMDP(MDP[Action, WorldMDPState]):
     def __init__(self, world: World):
         self.world = world
-        self.state = WorldMDPState(0, 0, self.world.get_state())
 
     def _actions(self, agent: int, action: Action):
         return [
@@ -43,8 +47,7 @@ class WorldMDP(MDP[Action, WorldMDPState]):
     def reset(self):
         self.n_expanded_states = 0
         self.world.reset()
-        self.state = WorldMDPState(0, 0, self.world.get_state())
-        return self.state
+        return WorldMDPState(0, 0, self.world.get_state())
 
     def available_actions(self, state: WorldMDPState) -> list[Action]:
         current_state = self.world.get_state()
@@ -80,38 +83,61 @@ class WorldMDP(MDP[Action, WorldMDPState]):
         return self._get_next_state(state, step_reward)
 
 
+@dataclass
+class BetterWorldMDPState(WorldMDPState):
+    agent_scores: List[float]
+
+
 class BetterValueFunction(WorldMDP):
-    def _collected_gems_points(self, state: WorldMDPState, world_state: WorldState):
+    def reset(self):
+        self.n_expanded_states = 0
+        self.world.reset()
+        return BetterWorldMDPState(
+            0, 0, self.world.get_state(), [0] * self.world.n_agents
+        )
+
+    def compute_agent_score(
+        self, state: BetterWorldMDPState, step_reward: float, world_state: WorldState
+    ):
+        if step_reward == lle.REWARD_AGENT_DIED:
+            return float("-inf")
+
+        score = 0
+
+        # Collected Gems
+        gem_score = 0
+        if world_state.gems_collected.count(False) != 0:
+            gem_score = self.world.n_gems / world_state.gems_collected.count(False)
+
         collected_gems = world_state.gems_collected.count(
             True
         ) - state.world_state.gems_collected.count(True)
-        if state.current_agent == 0:
-            return collected_gems * 1
-        return collected_gems * -2
+        score += collected_gems * gem_score
 
-    def _agent_just_arrived_points(self, state: WorldMDPState, world_state: WorldState):
-        if state.current_agent != 0:
-            return 0
+        # Find closest gem (only if not arrived at exit)
+        if world_state.agents_positions[state.current_agent] not in self.world.exit_pos:
+            closest_gem_dist = float("+inf")
+            for gem_pos, _ in self.world.gems:
+                closest_gem_dist = min(
+                    closest_gem_dist,
+                    manhattan_distance(
+                        gem_pos, world_state.agents_positions[state.current_agent]
+                    ),
+                )
 
-        just_arrived = (
-            world_state.agents_positions[state.current_agent] in self.world.exit_pos
-        ) and (state.current_agent_pos not in self.world.exit_pos)
-        return just_arrived * 2
+            score -= closest_gem_dist
 
-    def _get_next_state(self, state: WorldMDPState, step_reward: float):
+        return score
+
+    def _get_next_state(self, state: BetterWorldMDPState, step_reward: float):
         next_agent = (state.current_agent + 1) % self.world.n_agents
         current_world_state = self.world.get_state()
 
-        # Check if agent 0 died
-        if step_reward == lle.REWARD_AGENT_DIED and state.current_agent == 0:
-            return WorldMDPState(float("-inf"), next_agent, current_world_state)
+        scores = state.agent_scores[:]
+        scores[state.current_agent] = self.compute_agent_score(
+            state, step_reward, current_world_state
+        )
 
-        current_points = -2 if state.current_agent == 0 else 0
-        current_points += self._collected_gems_points(state, current_world_state)
-        current_points += self._agent_just_arrived_points(state, current_world_state)
-
-        return WorldMDPState(
-            state.value + current_points,
-            next_agent,
-            current_world_state,
+        return BetterWorldMDPState(
+            scores[0] - max(scores[1:]), next_agent, current_world_state, scores
         )
