@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "4-rl"
+version = "0.1.0"
+description = ""
+authors = ["Yannick Molinghen <yannick.molinghen@ulb.be>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.13"
+matplotlib = "3.6"
+seaborn = "^0.12.2"
+pytest = "^7.4.2"
+gymnasium = "^0.29.1"
+laser-learning-environment = "0.1.8"
+opencv-python = "^4.8.1.78"
+rlenv = { git = "https://github.com/yamoling/rlenv", tag = "v0.4.4" }
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+
+[tool.ruff]
+# Check https://beta.ruff.rs/docs/rules/ for all rules
+fixable = ["ALL"]
+line-length = 140
