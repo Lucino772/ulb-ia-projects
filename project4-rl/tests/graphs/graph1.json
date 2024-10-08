@@ -1,0 +1,44 @@
+{
+    "states": [
+        "a",
+        "b",
+        "c"
+    ],
+    "start_state": "a",
+    "end_states": [
+        "b",
+        "c"
+    ],
+    "actions": [
+        "left",
+        "right"
+    ],
+    "transitions": {
+        "a": {
+            "left": [
+                {
+                    "to": "b",
+                    "probability": 0.8,
+                    "reward": 1
+                },
+                {
+                    "to": "c",
+                    "probability": 0.2,
+                    "reward": -1
+                }
+            ],
+            "right": [
+                {
+                    "to": "a",
+                    "probability": 0.5,
+                    "reward": 0
+                },
+                {
+                    "to": "b",
+                    "probability": 0.5,
+                    "reward": 1
+                }
+            ]
+        }
+    }
+}
